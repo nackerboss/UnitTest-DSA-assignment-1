@@ -1,5 +1,3 @@
-# ~~~Spaghetti Test~~~
-
 ### Setup
 
 1. Thêm `VectorStore.cpp` và `VectorStore.h` vào repo.
