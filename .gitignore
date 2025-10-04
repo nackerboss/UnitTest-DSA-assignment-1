@@ -1,0 +1,5 @@
+.vscode/
+VectorStore.cpp
+VectorStore.h
+*.exe
+**/out.txt
