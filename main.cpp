@@ -490,6 +490,12 @@ void TestHelper::VectorStoreTest()
       n[i] = vs->l2Distance(vs->getVector(i), *D);
    }
    println();
+   for (int i = 0; i < par_size; i++)
+   {
+      println(n[k[i]]);
+   }
+   
+   println();
    println();
    println("Unsorted Distance measure array: ");
    for (int i {}; i < par_size; i++)
