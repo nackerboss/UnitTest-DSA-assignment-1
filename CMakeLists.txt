@@ -32,7 +32,7 @@ target_compile_options(
         # -Wno-unused-parameter
         # -Wno-deprecated-copy
         -g3
-    # -fsanitize=address,undefined
+    # -fsanitize=address,undefined, muốn bật asan thì uncomment 4 dòng duới
     # -fno-omit-frame-pointer
 )
 
