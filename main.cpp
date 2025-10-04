@@ -476,34 +476,34 @@ void TestHelper::VectorStoreTest()
 
    int *k = vs->topKNearest(*D, par_size, "euclidean");
 
-   // int nearest = (vs->findNearest(*D, "euclidean"));
-   //
-   // println("sorted indices: ");
-   // for (int i {}; i < par_size; i++)
-   // {
-   //    print("{}, ", (k[i]));
-   // }
-   // double *n { new double[par_size] };
-   //
-   // for (int i {}; i < par_size; i++)
-   // {
-   //    n[i] = vs->l2Distance(vs->getVector(i), *D);
-   // }
-   // println();
-   // println();
-   // println("Unsorted Distance measure array: ");
-   // for (int i {}; i < par_size; i++)
-   // {
-   //    print("{}, ", (n[i]));
-   // }
-   //
+   int nearest = (vs->findNearest(*D, "euclidean"));
+   
+   println("sorted indices: ");
+   for (int i {}; i < par_size; i++)
+   {
+      print("{}, ", (k[i]));
+   }
+   double *n { new double[par_size] };
+   
+   for (int i {}; i < par_size; i++)
+   {
+      n[i] = vs->l2Distance(vs->getVector(i), *D);
+   }
    println();
    println();
-   // println("nearest: {}", n[nearest]);
+   println("Unsorted Distance measure array: ");
+   for (int i {}; i < par_size; i++)
+   {
+      print("{}, ", (n[i]));
+   }
+   
+   println();
+   println();
+   println("nearest: {}", n[nearest]);
    delete[] k;
    delete D;
    delete vs;
-   // delete[] n;
+   delete[] n;
 
    fclose(this->outfile);
 }

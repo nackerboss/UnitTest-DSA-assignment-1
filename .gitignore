@@ -4,3 +4,4 @@ VectorStore.h
 *.exe
 **/out.txt
 /build
+.cache/
