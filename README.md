@@ -1,7 +1,7 @@
 ## ~~~spaghetti test~~~
  
 ### Để chạy đuợc bài test thì hãy tự thêm VectorStore.cpp và .h vào repo
-### sau đó thêm  template std::string ArrayList<VectorStore::VectorRecord \*>::toString( std::string (*)(VectorStore::VectorRecord *&)) const;
+### sau đó thêm  ```template std::string ArrayList<VectorStore::VectorRecord \*>::toString( std::string (*)(VectorStore::VectorRecord *&)) const;```
 ### ở cuối file VectorStore.cpp 
 
 ## cách chạy bài test
