@@ -168,7 +168,7 @@ public:
    TestHelper(string folder);
    ~TestHelper();
    void checkCap();
-   void VectorStoreTest();
+   void VectorStoreTest(string nums);
    void FileIOtest(string nums);
    void TestArrayList() {}
 };
@@ -176,7 +176,7 @@ public:
 TestHelper::TestHelper(string folder)
 {
    this->path = folder;
-   this->inputFile = "";
+   this->inputFile = "in.txt";
    this->outputFile = "out.txt";
    // this->outfile = freopen(this->outputFile.c_str(), "w", stdout);
    this->answerFile = "ans.txt";
@@ -347,146 +347,53 @@ std::string random_string(
 
    return result;
 }
-void TestHelper::VectorStoreTest()
+void TestHelper::VectorStoreTest(string nums)
 {
-   this->outfile = freopen(string(this->path + this->outputFile).c_str(), "w", stdout);
-   VectorStore *vs = new VectorStore(10, dummyEmbedding);
-
-   vector<string> Holder {
-      "ZQWIqRX",
-      "Ki1P2Z",
-      "XqR0PgY",
-      "UOjRVPQ",
-      "1Vdzx0R",
-      "09FaACj",
-      "AhrUJlm",
-      "ljrG26S",
-      "6GIOrG7",
-      "Cy9SZ9o",
-      "gUBCXiv",
-      "eEK8DP1",
-      "BBrUS0j",
-      "lpiUcmu",
-      "VcXqgLC",
-      "VEF3XY1",
-      "VI7pSwe",
-      "XsPY7up",
-      "lh8epKT",
-      "jvesDcO",
-      "1vqDFXP",
-      "Z2mrkML",
-      "mf5KjCh",
-      "LjsKGek",
-      "1e6zis9",
-      "y5DSMjY",
-      "bJrN4gw",
-      "4msMUZo",
-      "VKo5WSe",
-      "qfUMtjZ",
-      "njjqcYv",
-      "BdDBEX5",
-      "QIZjSQq",
-      "VDRPmjb",
-      "g8UTCl5",
-      "DRLLV47",
-      "M53A5Fc",
-      "U9dDG4y",
-      "Gm6TqsX",
-      "hVUhkyI",
-      "vJEREDy",
-      "wlWuXSC",
-      "DvtDEDg",
-      "QT1W1Rm",
-      "lfXWLsk",
-      "YvKx1yv",
-      "9iJ6Rvb",
-      "M5sYNHf",
-      "rPr6Ddd",
-      "B5Ri8xi",
-      "MOhcyYg",
-      "gFQDPOW",
-      "cbUYq2H",
-      "fGp0u3G",
-      "g1P4g3U",
-      "WeHiwue",
-      "JoE24S8",
-      "GIXQGxk",
-      "O7rhYbf",
-      "mqrQVhw",
-      "uaNneKQ",
-      "oa7og91",
-      "uXlFPEV",
-      "2wfOn0S",
-      "d3CSPm5",
-      "u3ImpDT",
-      "ZUQj7wA",
-      "hdJGTH1",
-      "wPUefTx",
-      "4JrxR2t",
-      "FTx4HQx",
-      "VHHvahh",
-      "NiJq128",
-      "RfoIKXG",
-      "af8L0my",
-      "NUi5sBR",
-      "wyAlLzD",
-      "qHmQMh0",
-      "Ga9WICT",
-      "JF1Uk1c",
-      "qmXMLvV",
-      "x6vpY0S",
-      "7d7Lz0I",
-      "SWfDx4V",
-      "ot9cO83",
-      "R1TfKAC",
-      "1DsOsSF",
-      "c5NYsPs",
-      "eaUmrse",
-      "pI0aVtw",
-      "GkZfGAY",
-      "NcvX0Cg",
-      "NpXDbvB",
-      "am0HVcd",
-      "LCMTrSZ",
-      "Fa3HDVa",
-      "s0cvHva",
-      "EKGllw5",
-      "RFkXCdp",
-      "uYEnQMK",
-   };
-
-   int sample_size { 100 };
-   println(sample_size);
-
-   int par_size { sample_size };
-
-   for (int i {}; i < par_size; i++)
+   string dir = this->path + "/VectorStoreTest/" + nums + "/" + this->inputFile; 
+   FILE *inFIle = freopen(dir.c_str(),"r",stdin);
+   int n,k,dim;
+   cin>>n>>dim;
+   vector<string> dictionary(n);
+   for (int i = 0; i < n; i++)
    {
-      vs->addText(Holder[i]);
+      cin>>dictionary[i];
    }
-
+   string querry,metric;
+   cin>>k>>metric;
+   cin>>querry;
+   VectorStore *vs = new VectorStore(dim,dummyEmbedding);
+   for (int i = 0; i < n; i++)
+   {
+      vs->addText(dictionary[i]);
+   }
+   auto trans = vs->preprocessing(querry);
+   fclose(inFIle);//fropen về console
+   //int* res = vs->topKNearest(*trans,k,metric);
+   //xử lí rồi output từ dưới
+   dir = this->path + "/VectorStoreTest/" + nums + "/" + this->outputFile;
+   this->outfile = freopen((dir).c_str(), "w", stdout);
    cout << "vs->records.toString(func) : \n" << vs->records.toString(VectorRec2String) << "\n";
 
    println("");
-   auto D = vs->preprocessing("lemonade");
+   auto D = vs->preprocessing(querry);
    println("Test Vector: ");
    println(D->toString());
    println("");
 
-   int *k = vs->topKNearest(*D, par_size, "euclidean");
+   int *idx = vs->topKNearest(*D, k, metric);
 
-   int nearest = (vs->findNearest(*D, "euclidean"));
+   int nearest = (vs->findNearest(*D, metric));
    
    println("sorted indices: ");
-   for (int i {}; i < par_size; i++)
+   for (int i {}; i < k; i++)
    {
-      print("{}, ", (k[i]));
+      print("{}, ", (idx[i]));
    }
-   double *n { new double[par_size] };
+   double *res { new double[n] };
    
-   for (int i {}; i < par_size; i++)
+   for (int i {}; i < n; i++)
    {
-      n[i] = vs->l2Distance(vs->getVector(i), *D);
+      res[i] = vs->l2Distance(vs->getVector(i), *D);
    }
    // println();
    // for (int i = 0; i < par_size; i++)
@@ -497,18 +404,18 @@ void TestHelper::VectorStoreTest()
    println();
    println();
    println("Unsorted Distance measure array: ");
-   for (int i {}; i < par_size; i++)
+   for (int i {}; i < n; i++)
    {
-      print("{}, ", (n[i]));
+      print("{}, ", (res[i]));
    }
    
    println();
    println();
-   println("nearest: {}", n[nearest]);
-   delete[] k;
+   println("nearest: {}", res[nearest]);
+   delete[] idx;
    delete D;
    delete vs;
-   delete[] n;
+   delete[] res;
 
    fclose(this->outfile);
 }
@@ -557,7 +464,7 @@ int main()
 {
    // Student can use this main function to do some basic testing
    TestHelper *test = new TestHelper("test");
-   test->VectorStoreTest();
+   test->VectorStoreTest("test001");
    delete test;
    // cout<<double(Hashing(31))/7.0;
    return 0;
