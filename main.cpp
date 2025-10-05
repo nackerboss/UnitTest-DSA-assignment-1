@@ -110,8 +110,6 @@ OutputIt transform(const Container &a, OutputIt d_first, UnaryOp unary_op)
 }
 #pragma endregion
 
-#pragma region println
-#pragma endregion
 #pragma region funct pointer
 int seed = 182367;
 int prime = 33773;
@@ -123,7 +121,7 @@ int Hashing(int a)
    {
       tmp.erase((i * 2) % tmp.size(), 1);
       tmp.insert(
-          (i * 2) % tmp.size(), to_string((tmp[(i * i) % tmp.size()] - '0' + tmp[(i + 1) * (i) % tmp.size()] - '0')));
+         (i * 2) % tmp.size(), to_string((tmp[(i * i) % tmp.size()] - '0' + tmp[(i + 1) * (i) % tmp.size()] - '0')));
       i += tmp[i] - '0';
    }
    res = stoi(tmp) % prime;
@@ -158,7 +156,7 @@ string VectorRec2String(VectorStore::VectorRecord *&a)
 #pragma region TestHelper
 class TestHelper
 {
- private:
+private:
    string path;
    string inputFile;
    string outputFile;
@@ -166,11 +164,12 @@ class TestHelper
    FILE *outfile;
    FILE *ansfile;
 
- public:
+public:
    TestHelper(string folder);
    ~TestHelper();
    void checkCap();
    void VectorStoreTest();
+   void FileIOtest(string nums);
    void TestArrayList() {}
 };
 
@@ -289,7 +288,7 @@ TestHelper::~TestHelper()
       if (a[i] != b[i])
       {
          std::cerr << "Mismatch at index:" << i << ", a=" << (int)(unsigned char)a[i]
-                   << " b=" << (int)(unsigned char)b[i] << " in Ascii" << "\n";
+                  << " b=" << (int)(unsigned char)b[i] << " in Ascii" << "\n";
 
          break;
       }
@@ -333,7 +332,7 @@ void TestHelper::checkCap()
 
 // generate a random string of given length from given charset
 std::string random_string(
-    size_t length, const std::string &charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+   size_t length, const std::string &charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 {
    static thread_local std::mt19937 rng(std::random_device {}());
    std::uniform_int_distribution<size_t> dist(0, charset.size() - 1);
@@ -489,11 +488,11 @@ void TestHelper::VectorStoreTest()
    {
       n[i] = vs->l2Distance(vs->getVector(i), *D);
    }
-   println();
-   for (int i = 0; i < par_size; i++)
-   {
-      println(n[k[i]]);
-   }
+   // println();
+   // for (int i = 0; i < par_size; i++)
+   // {
+   //    println(n[k[i]]);
+   // }
    
    println();
    println();
@@ -512,6 +511,30 @@ void TestHelper::VectorStoreTest()
    delete[] n;
 
    fclose(this->outfile);
+}
+void TestHelper::FileIOtest(string nums)
+{
+   string dir = this->path + "/FileIOTest/" + nums + "/" + this->inputFile; 
+   FILE *inFIle = freopen(dir.c_str(),"r",stdin);
+   int n,k,dim;
+   cin>>n>>dim;
+   vector<string> dictionary(n);
+   for (int i = 0; i < n; i++)
+   {
+      cin>>dictionary[i];
+   }
+   string querry,metric;
+   cin>>k>>metric;
+   cin>>querry;
+   VectorStore *vs = new VectorStore(dim,dummyEmbedding);
+   for (int i = 0; i < n; i++)
+   {
+      vs->addText(dictionary[i]);
+   }
+   auto trans = vs->preprocessing(querry);
+   fclose(inFIle);//fropen về console
+   //int* res = vs->topKNearest(*trans,k,metric);
+   //xử lí rồi output từ dưới
 }
 #pragma endregion
 #endif
@@ -533,7 +556,7 @@ void TestHelper::VectorStoreTest()
 int main()
 {
    // Student can use this main function to do some basic testing
-   TestHelper *test = new TestHelper("test/");
+   TestHelper *test = new TestHelper("test");
    test->VectorStoreTest();
    delete test;
    // cout<<double(Hashing(31))/7.0;
