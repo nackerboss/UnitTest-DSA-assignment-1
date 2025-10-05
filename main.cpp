@@ -155,7 +155,7 @@ TestHelper::~TestHelper()
    ansBuffer << cin.rdbuf();
    fclose(this->ansfile);
 
-   this->outfile = freopen(string(this->path + this->outputFile).c_str(), "r", stdin);
+   this->outfile = freopen(string(this->path + "/VectorStoreTest/test001/" + this->outputFile).c_str(), "r", stdin);
    std::stringstream outBuffer;
    outBuffer << cin.rdbuf();
    fclose(this->outfile);
@@ -330,7 +330,7 @@ void TestHelper::FileIOtest(string nums)
 int main()
 {
    // Student can use this main function to do some basic testing
-   TestHelper *test = new TestHelper("test");
+   TestHelper *test = new TestHelper("test/");
    test->VectorStoreTest("test001");
    delete test;
    return 0;
