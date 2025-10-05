@@ -8,108 +8,6 @@
 #include <sstream>
 #include <string>
 
-#pragma region println
-namespace format
-{
-   // horrible performance , but do the tricks
-   inline void format_impl(std::ostringstream &oss, const std::string &fmt, size_t pos)
-   {
-      oss << fmt.substr(pos);
-   }
-
-   template <typename T, typename... Args>
-   void format_impl(std::ostringstream &oss, const std::string &fmt, size_t pos, T &&value, Args &&...args)
-   {
-      size_t brace { fmt.find("{}", pos) };
-      if (brace == std::string::npos)
-      {
-         oss << fmt.substr(pos);
-         return;
-      }
-
-      oss << fmt.substr(pos, brace - pos) << std::forward<T>(value);
-      format_impl(oss, fmt, brace + 2, std::forward<Args>(args)...);
-   }
-
-   template <typename... Args> std::string format(const std::string &fmt, Args &&...args)
-   {
-      std::ostringstream oss;
-      format_impl(oss, fmt, 0, std::forward<Args>(args)...);
-      return oss.str();
-   }
-
-}; // namespace format
-//
-
-template <typename... Args> void print(const std::string &fmt, Args &&...args)
-{
-   std::cout << format::format(fmt, args...);
-}
-
-template <typename T> void print(const T &value)
-{
-   std::cout << value;
-}
-
-inline void println()
-{
-   std::cout << "\n";
-}
-template <typename T> void println(const T &value)
-{
-   std::cout << value << "\n";
-}
-
-template <typename... Args> void println(const std::string &fmt, Args &&...args)
-{
-   std::cout << format::format(fmt, args...) << "\n";
-}
-#pragma endregion
-using namespace std;
-#pragma region compare string
-template <typename GenericIt1, typename GerenicIt2, typename T, typename BinaryOp1, typename BinaryOp2>
-T inner_product(GenericIt1 first1, GenericIt1 last1, GerenicIt2 first2, T init, BinaryOp1 op1, BinaryOp2 op2)
-{
-   while (first1 != last1)
-   {
-      init = std::move(op1(std::move(init), std::move(op2(*first1, *first2))));
-      ++first1;
-      ++first2;
-   }
-   return init;
-}
-
-template <typename InputIt, typename OutputIt, typename UnaryOp>
-OutputIt transform(InputIt first1, InputIt last1, OutputIt d_first, UnaryOp unary_op)
-{
-   while (first1 != last1)
-   {
-      *d_first = unary_op(*first1); // no std::move , because we dont wants a bunch of stupid side effcts
-      ++first1;
-      ++d_first;
-   }
-   return d_first;
-}
-
-template <typename InputIt, typename OutputIt, typename UnaryOp>
-OutputIt transform_n(InputIt first1, size_t n, OutputIt d_first, UnaryOp unary_op)
-{
-   for (size_t i {}; i < n; i++)
-   {
-      *d_first = std::move(unary_op(*first1));
-      ++first1;
-      ++d_first;
-   }
-   return d_first;
-}
-
-template <typename Container, typename OutputIt, typename UnaryOp>
-OutputIt transform(const Container &a, OutputIt d_first, UnaryOp unary_op)
-{
-   return transform(begin(a), end(a), d_first, unary_op);
-}
-#pragma endregion
-
 #pragma region funct pointer
 int seed = 182367;
 int prime = 33773;
@@ -121,7 +19,7 @@ int Hashing(int a)
    {
       tmp.erase((i * 2) % tmp.size(), 1);
       tmp.insert(
-         (i * 2) % tmp.size(), to_string((tmp[(i * i) % tmp.size()] - '0' + tmp[(i + 1) * (i) % tmp.size()] - '0')));
+          (i * 2) % tmp.size(), to_string((tmp[(i * i) % tmp.size()] - '0' + tmp[(i + 1) * (i) % tmp.size()] - '0')));
       i += tmp[i] - '0';
    }
    res = stoi(tmp) % prime;
@@ -156,7 +54,7 @@ string VectorRec2String(VectorStore::VectorRecord *&a)
 #pragma region TestHelper
 class TestHelper
 {
-private:
+ private:
    string path;
    string inputFile;
    string outputFile;
@@ -164,7 +62,7 @@ private:
    FILE *outfile;
    FILE *ansfile;
 
-public:
+ public:
    TestHelper(string folder);
    ~TestHelper();
    void checkCap();
@@ -247,8 +145,7 @@ double similarity(const std::string &a, const std::string &b)
 {
    double cs = hybrid_accuracy(a, b);
    double ls = line_similarity(a, b);
-   // median of the two
-   return (cs + ls) * 100 / 2.0; // or: return std::min(std::max(cs, ls), std::max(...)) for true median
+   return (cs + ls) * 100 / 2.0;
 }
 TestHelper::~TestHelper()
 {
@@ -271,24 +168,13 @@ TestHelper::~TestHelper()
    };
    normalize(a);
    normalize(b);
-   // int n1 = a.size(), n2 = b.size();
 
-   // auto result = inner_product(a.data(), a.data() + min(a.size(), b.size()), // first string
-   //     b.data(),                                                             // second string
-   //     0,                                                                    // init value
-   //     std::plus<>(),                                                        // combine accumulator
-   //     [](char x, char y)
-   //     {
-   //        return x != y ? 1 : 0;
-   //     } // per-char comparison
-   // );
-   //
    for (size_t i = 0; i < std::min(a.size(), b.size()); i++)
    {
       if (a[i] != b[i])
       {
          std::cerr << "Mismatch at index:" << i << ", a=" << (int)(unsigned char)a[i]
-                  << " b=" << (int)(unsigned char)b[i] << " in Ascii" << "\n";
+                   << " b=" << (int)(unsigned char)b[i] << " in Ascii" << "\n";
 
          break;
       }
@@ -332,7 +218,7 @@ void TestHelper::checkCap()
 
 // generate a random string of given length from given charset
 std::string random_string(
-   size_t length, const std::string &charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+    size_t length, const std::string &charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 {
    static thread_local std::mt19937 rng(std::random_device {}());
    std::uniform_int_distribution<size_t> dist(0, charset.size() - 1);
@@ -349,27 +235,27 @@ std::string random_string(
 }
 void TestHelper::VectorStoreTest(string nums)
 {
-   string dir = this->path + "/VectorStoreTest/" + nums + "/" + this->inputFile; 
-   FILE *inFIle = freopen(dir.c_str(),"r",stdin);
-   int n,k,dim;
-   cin>>n>>dim;
+   string dir = this->path + "/VectorStoreTest/" + nums + "/" + this->inputFile;
+   FILE *inFIle = freopen(dir.c_str(), "r", stdin);
+   int n, k, dim;
+   cin >> n >> dim;
    vector<string> dictionary(n);
    for (int i = 0; i < n; i++)
    {
-      cin>>dictionary[i];
+      cin >> dictionary[i];
    }
-   string querry,metric;
-   cin>>k>>metric;
-   cin>>querry;
-   VectorStore *vs = new VectorStore(dim,dummyEmbedding);
+   string querry, metric;
+   cin >> k >> metric;
+   cin >> querry;
+   VectorStore *vs = new VectorStore(dim, dummyEmbedding);
    for (int i = 0; i < n; i++)
    {
       vs->addText(dictionary[i]);
    }
    auto trans = vs->preprocessing(querry);
-   fclose(inFIle);//fropen về console
-   //int* res = vs->topKNearest(*trans,k,metric);
-   //xử lí rồi output từ dưới
+   fclose(inFIle); // fropen về console
+   // int* res = vs->topKNearest(*trans,k,metric);
+   // xử lí rồi output từ dưới
    dir = this->path + "/VectorStoreTest/" + nums + "/" + this->outputFile;
    this->outfile = freopen((dir).c_str(), "w", stdout);
    cout << "vs->records.toString(func) : \n" << vs->records.toString(VectorRec2String) << "\n";
@@ -383,24 +269,19 @@ void TestHelper::VectorStoreTest(string nums)
    int *idx = vs->topKNearest(*D, k, metric);
 
    int nearest = (vs->findNearest(*D, metric));
-   
+
    println("sorted indices: ");
    for (int i {}; i < k; i++)
    {
       print("{}, ", (idx[i]));
    }
    double *res { new double[n] };
-   
+
    for (int i {}; i < n; i++)
    {
       res[i] = vs->l2Distance(vs->getVector(i), *D);
    }
-   // println();
-   // for (int i = 0; i < par_size; i++)
-   // {
-   //    println(n[k[i]]);
-   // }
-   
+
    println();
    println();
    println("Unsorted Distance measure array: ");
@@ -408,7 +289,7 @@ void TestHelper::VectorStoreTest(string nums)
    {
       print("{}, ", (res[i]));
    }
-   
+
    println();
    println();
    println("nearest: {}", res[nearest]);
@@ -421,44 +302,30 @@ void TestHelper::VectorStoreTest(string nums)
 }
 void TestHelper::FileIOtest(string nums)
 {
-   string dir = this->path + "/FileIOTest/" + nums + "/" + this->inputFile; 
-   FILE *inFIle = freopen(dir.c_str(),"r",stdin);
-   int n,k,dim;
-   cin>>n>>dim;
+   string dir = this->path + "/FileIOTest/" + nums + "/" + this->inputFile;
+   FILE *inFIle = freopen(dir.c_str(), "r", stdin);
+   int n, k, dim;
+   cin >> n >> dim;
    vector<string> dictionary(n);
    for (int i = 0; i < n; i++)
    {
-      cin>>dictionary[i];
+      cin >> dictionary[i];
    }
-   string querry,metric;
-   cin>>k>>metric;
-   cin>>querry;
-   VectorStore *vs = new VectorStore(dim,dummyEmbedding);
+   string querry, metric;
+   cin >> k >> metric;
+   cin >> querry;
+   VectorStore *vs = new VectorStore(dim, dummyEmbedding);
    for (int i = 0; i < n; i++)
    {
       vs->addText(dictionary[i]);
    }
    auto trans = vs->preprocessing(querry);
-   fclose(inFIle);//fropen về console
-   //int* res = vs->topKNearest(*trans,k,metric);
-   //xử lí rồi output từ dưới
+   fclose(inFIle); // fropen về console
+   // int* res = vs->topKNearest(*trans,k,metric);
+   // xử lí rồi output từ dưới
 }
 #pragma endregion
 #endif
-
-// bool compareint(int a, int b)
-// {
-//     return a>b;
-// }
-
-// void test_005() {
-//     SinglyLinkedList<int> sll;
-//     sll.add(10);
-//     sll.add(20);
-//     sll.add(30);
-//     sll.removeAt(1);
-//     cout << "test_005: " << sll.toString() << endl;
-// }
 
 int main()
 {
@@ -466,6 +333,5 @@ int main()
    TestHelper *test = new TestHelper("test");
    test->VectorStoreTest("test001");
    delete test;
-   // cout<<double(Hashing(31))/7.0;
    return 0;
 }
