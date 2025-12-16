@@ -6,7 +6,8 @@
 #include <string>
 #include <stdexcept>
 #include <cmath>
-#include "utils.h"
+#include "utils/utils.h"
+
 using namespace std;
 
 class invalid_metric : public std::logic_error {

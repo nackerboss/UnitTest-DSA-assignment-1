@@ -12,7 +12,7 @@ constexpr const char *RED = "\033[31m";
 constexpr const char *GREEN = "\033[32m";
 constexpr const char *RESET = "\033[0m";
 
-namespace line_diff
+namespace bsdiff
 {
    enum class Operation : uint8_t
    {
@@ -82,9 +82,10 @@ namespace line_diff
       // Dp for Longest common subsequence.
       for (size_t i { 1 }; i <= n; i++)
       {
+         std::string_view Ai = A[i - 1];
          for (size_t j { 1 }; j <= m; j++)
          {
-            if (A[i - 1] == B[j - 1])
+            if (Ai == B[j - 1])
             {
                at(i, j) = at(i - 1, j - 1) + 1;
             }
@@ -109,25 +110,25 @@ namespace line_diff
             --i;
             --j;
          }
-         else if (i > 0 && (j == 0 || at(i - 1, j) >= at(i, j - 1)))
-         {
-            diff_buffer.push_back({ Operation::DELETE, A[i - 1] });
-            --i;
-         }
-         else
+         else if (j > 0 && (i == 0 || at(i, j - 1) >= at(i - 1, j)))
          {
             diff_buffer.push_back({ Operation::INSERT, B[j - 1] });
             --j;
          }
+         else
+         {
+            diff_buffer.push_back({ Operation::DELETE, A[i - 1] });
+            --i;
+         }
       }
    }
-} // namespace line_diff
+} // namespace bsdiff
 
 // binding class LDiff
 class LDiff
 {
-   using Diff = line_diff::Diff;
-   using Operation = line_diff::Operation;
+   using Diff = bsdiff::Diff;
+   using Operation = bsdiff::Operation;
 
  private:
    std::vector<Diff> mdiff;
@@ -142,10 +143,10 @@ class LDiff
 };
 
 inline LDiff::LDiff(std::string_view A, std::string_view B) noexcept
-    : morg { line_diff::split_lines(A) }
-    , mnew { line_diff::split_lines(B) }
+    : morg { bsdiff::split_lines(A) }
+    , mnew { bsdiff::split_lines(B) }
 {
-   line_diff::diff(morg, mnew, mdiff);
+   bsdiff::diff(morg, mnew, mdiff);
 }
 
 inline void LDiff::print() const
