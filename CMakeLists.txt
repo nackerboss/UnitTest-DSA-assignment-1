@@ -8,10 +8,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_executable(
     ${CMAKE_PROJECT_NAME}
     main.cpp
-    VectorStore.cpp
-    VectorStore.h
     main.h
-    utils.h
+    utils/utils.h
 )
 
 add_custom_target(
