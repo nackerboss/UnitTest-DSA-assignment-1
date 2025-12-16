@@ -82,9 +82,10 @@ namespace bsdiff
       // Dp for Longest common subsequence.
       for (size_t i { 1 }; i <= n; i++)
       {
+         std::string_view Ai = A[i - 1];
          for (size_t j { 1 }; j <= m; j++)
          {
-            if (A[i - 1] == B[j - 1])
+            if (Ai == B[j - 1])
             {
                at(i, j) = at(i - 1, j - 1) + 1;
             }
