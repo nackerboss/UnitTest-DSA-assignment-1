@@ -12,7 +12,7 @@ constexpr const char *RED = "\033[31m";
 constexpr const char *GREEN = "\033[32m";
 constexpr const char *RESET = "\033[0m";
 
-namespace line_diff
+namespace bsdiff
 {
    enum class Operation : uint8_t
    {
@@ -121,13 +121,13 @@ namespace line_diff
          }
       }
    }
-} // namespace line_diff
+} // namespace bsdiff
 
 // binding class LDiff
 class LDiff
 {
-   using Diff = line_diff::Diff;
-   using Operation = line_diff::Operation;
+   using Diff = bsdiff::Diff;
+   using Operation = bsdiff::Operation;
 
  private:
    std::vector<Diff> mdiff;
@@ -142,10 +142,10 @@ class LDiff
 };
 
 inline LDiff::LDiff(std::string_view A, std::string_view B) noexcept
-    : morg { line_diff::split_lines(A) }
-    , mnew { line_diff::split_lines(B) }
+    : morg { bsdiff::split_lines(A) }
+    , mnew { bsdiff::split_lines(B) }
 {
-   line_diff::diff(morg, mnew, mdiff);
+   bsdiff::diff(morg, mnew, mdiff);
 }
 
 inline void LDiff::print() const
