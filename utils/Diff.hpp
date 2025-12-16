@@ -109,15 +109,15 @@ namespace line_diff
             --i;
             --j;
          }
-         else if (i > 0 && (j == 0 || at(i - 1, j) >= at(i, j - 1)))
-         {
-            diff_buffer.push_back({ Operation::DELETE, A[i - 1] });
-            --i;
-         }
-         else
+         else if (j > 0 && (i == 0 || at(i, j - 1) >= at(i - 1, j)))
          {
             diff_buffer.push_back({ Operation::INSERT, B[j - 1] });
             --j;
+         }
+         else
+         {
+            diff_buffer.push_back({ Operation::DELETE, A[i - 1] });
+            --i;
          }
       }
    }
