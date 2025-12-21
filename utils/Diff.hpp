@@ -25,6 +25,12 @@ namespace bsdiff
    {
       Operation op;
       std::string_view text;
+
+      Diff(Operation op, std::string_view text)
+          : op(op)
+          , text(text)
+      {
+      }
    };
 
    // Takes a std::string_view buffer which preferably you read from a file.
@@ -72,7 +78,7 @@ namespace bsdiff
       size_t n { A.size() };
       size_t m { B.size() };
 
-      std::vector<uint16_t> dp((n + 1) * (m + 1));
+      uint16_t *dp = new uint16_t[(n + 1) * (m + 1)];
 
       auto at = [&](size_t i, size_t j) -> uint16_t &
       {
@@ -106,21 +112,22 @@ namespace bsdiff
       {
          if (i > 0 && j > 0 && A[i - 1] == B[j - 1])
          {
-            diff_buffer.push_back({ Operation::KEEP, A[i - 1] });
+            diff_buffer.emplace_back(Operation::KEEP, A[i - 1]);
             --i;
             --j;
          }
          else if (j > 0 && (i == 0 || at(i, j - 1) >= at(i - 1, j)))
          {
-            diff_buffer.push_back({ Operation::INSERT, B[j - 1] });
+            diff_buffer.emplace_back(Operation::INSERT, B[j - 1]);
             --j;
          }
          else
          {
-            diff_buffer.push_back({ Operation::DELETE, A[i - 1] });
+            diff_buffer.emplace_back(Operation::DELETE, A[i - 1]);
             --i;
          }
       }
+      delete[] dp;
    }
 } // namespace bsdiff
 
