@@ -13,9 +13,9 @@
 namespace bsdiff
 {
     // ANSI color for outputing.
-    constexpr const char *RED = "\033[31m";
-    constexpr const char *GREEN = "\033[32m";
-    constexpr const char *RESET = "\033[0m";
+    constexpr inline const char *RED = "\033[31m";
+    constexpr inline const char *GREEN = "\033[32m";
+    constexpr inline const char *RESET = "\033[0m";
 
     enum class Operation : uint8_t
     {
@@ -84,62 +84,112 @@ namespace bsdiff
         size_t m_full = B.size();
 
         size_t prefix_idx = 0;
+        // prefix trimming.
         while (prefix_idx < n_full && prefix_idx < m_full && A[prefix_idx] == B[prefix_idx])
         {
             diff_buffer.emplace_back(Operation::KEEP, A[prefix_idx]);
             prefix_idx++;
         }
 
-        if (prefix_idx == n_full && prefix_idx == m_full)
+        size_t n_end = n_full - 1;
+        size_t m_end = m_full - 1;
+        // suffix trimming.
+        while (n_end >= prefix_idx && m_end >= prefix_idx && A[n_end] == B[m_end])
         {
+            n_end--;
+            m_end--;
+        }
+
+        if (m_end < prefix_idx)
+        {
+            for (size_t i = prefix_idx; i <= n_end; ++i)
+            {
+                diff_buffer.emplace_back(Operation::DELETE, A[i]);
+            }
+            for (size_t i = n_end + 1; i < n_full; ++i)
+            {
+                diff_buffer.emplace_back(Operation::KEEP, A[i]);
+            }
             return;
         }
 
-        int n = static_cast<int>(n_full - prefix_idx);
-        int m = static_cast<int>(m_full - prefix_idx);
+        if (n_end < prefix_idx)
+        {
+            for (size_t i = prefix_idx; i <= m_end; ++i)
+            {
+                diff_buffer.emplace_back(Operation::INSERT, B[i]);
+            }
+            for (size_t i = m_end + 1; i < m_full; ++i)
+            {
+                diff_buffer.emplace_back(Operation::KEEP, B[i]);
+            }
+            return;
+        }
+
+        // only diff on the actual middle.
+
+        int n = static_cast<int>(n_end - prefix_idx + 1);
+        int m = static_cast<int>(m_end - prefix_idx + 1);
 
         size_t max_d = n + m;
-        std::vector<int> v(2 * max_d + 1);
+
+        int *v = new int[2 * max_d + 1];
+
         std::vector<std::vector<int>> trace;
+        // good heuristic.
+        trace.reserve(std::max<size_t>(max_d >> 4, 8));
 
         // we shift from k in [-d,d] to [0,2d] to avoid negative indexing.
         v[1 + max_d] = 0;
 
         for (int d = 0; d <= max_d; d++)
         {
-            trace.push_back(v);
+            // avoid pushing the whole layer of v into the history we only take what we need.
+            // which is d+1 entries.
+            std::vector<int> current_layer;
+            current_layer.reserve(d + 1);
+
             for (int k = -d; k <= d; k += 2)
             {
                 int x = 0;
+                int k_idx = k + static_cast<int>(max_d);
 
-                if (k == -d || (k != d && v[(k - 1) + max_d] < v[(k + 1) + max_d]))
+                if (k == -d || (k != d && v[k_idx - 1] < v[k_idx + 1]))
                 {
                     // we go down from k+1 so x doesnt change.
                     // correspond to a vertical move.
-                    x = v[k + 1 + max_d];
+                    x = v[k_idx + 1];
                 }
                 // otherwise if we go from k-1 we have to increase v[k-1+max_d] by 1.
                 // correspond to a horizontal move.
                 else
                 {
-                    x = v[k - 1 + max_d] + 1;
+                    x = v[k_idx - 1] + 1;
                 }
 
                 int y = x - k;
+                // snaking.
                 while (x < n && y < m && A[prefix_idx + x] == B[prefix_idx + y])
                 {
                     x++;
                     y++;
                 }
-                v[k + max_d] = x;
+
+                v[k_idx] = x;
+                current_layer.push_back(x);
+
                 if (x >= n && y >= m)
                 {
+                    trace.emplace_back(std::move(current_layer));
                     goto backtrack;
                 }
             }
+            trace.emplace_back(std::move(current_layer));
         }
 
     backtrack:
+        delete[] v;
+
         std::vector<Diff> mid_diff;
         mid_diff.reserve(n + m);
         int x = n;
@@ -148,11 +198,16 @@ namespace bsdiff
         for (int d = static_cast<int>(trace.size() - 1); d > 0; d--)
         {
             int k = x - y;
+            const std::vector<int> &pre_v = trace[d - 1];
+            int prev_d = d - 1;
+
+            auto get_v = [&](int diag)
+            {
+                return pre_v[(diag + prev_d) / 2];
+            };
+
             int pre_k = 0;
-
-            const std::vector<int> &pre_v = trace[d];
-
-            if (k == -d || (k != d && pre_v[(k - 1) + max_d] < pre_v[(k + 1) + max_d]))
+            if (k == -d || (k != d && get_v(k - 1) < get_v(k + 1)))
             {
                 pre_k = k + 1;
             }
@@ -160,8 +215,10 @@ namespace bsdiff
             {
                 pre_k = k - 1;
             }
-            int pre_x = pre_v[pre_k + max_d];
+
+            int pre_x = get_v(pre_k);
             int pre_y = pre_x - pre_k;
+
             // if both (x,y) > (pre_x,pre_y) then we are in a diagonal since diagonal increase both of them.
             // and diagonal = KEEP.
             while (x > pre_x && y > pre_y)
@@ -170,7 +227,8 @@ namespace bsdiff
                 x--;
                 y--;
             }
-            // an increase in y correspond to an insert.
+
+            // an increases in y correspond to an insert.
             if (y > pre_y)
             {
                 mid_diff.emplace_back(Operation::INSERT, B[prefix_idx + y - 1]);
@@ -183,6 +241,7 @@ namespace bsdiff
             x = pre_x;
             y = pre_y;
         }
+
         // final diagonal trace.
         while (x > 0 && y > 0)
         {
@@ -192,6 +251,12 @@ namespace bsdiff
         }
 
         diff_buffer.insert(diff_buffer.end(), mid_diff.rbegin(), mid_diff.rend());
+
+        // attaching the common suffix.
+        for (size_t i = n_end + 1; i < n_full; ++i)
+        {
+            diff_buffer.emplace_back(Operation::KEEP, A[i]);
+        }
     }
 } // namespace bsdiff
 
