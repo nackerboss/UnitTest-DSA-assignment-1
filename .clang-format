@@ -1,0 +1,14 @@
+BasedOnStyle: LLVM
+IndentWidth: 4
+BreakBeforeBraces : Allman 
+AllowShortLambdasOnASingleLine: false
+ColumnLimit: 120
+Cpp11BracedListStyle: false
+SpaceBeforeCpp11BracedList: true
+AlignAfterOpenBracket: DontAlign
+BreakConstructorInitializers: BeforeComma
+AllowAllConstructorInitializersOnNextLine: true
+AllowShortFunctionsOnASingleLine: Inline
+NamespaceIndentation: All
+AlignArrayOfStructures: Left
+BreakTemplateDeclarations: Yes
